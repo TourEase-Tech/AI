@@ -127,7 +127,6 @@ class MatrixFactorizationRecommenderSystem:
     
     def recommend_matrix_factorization(self, user_id, n = 10):
         recommend_list = SortedList()
-
         for tour_id in self.tour_to_user.keys():
             if(tour_id, user_id) not in self.tour_user_liked:
                 liked = self.get_rating(user_id, tour_id)
@@ -156,6 +155,8 @@ class MatrixFactorizationRecommenderSystem:
                 'description': self.tours[tour_id]['description'],
                 'price': self.tours[tour_id]['price'],
                 'period': self.tours[tour_id]['period'],
+                'images': self.tours[tour_id]['images'],
+                'departureLocation': self.tours[tour_id]['departureLocation'],
                 'score': round(score,2)
             })
         return result
