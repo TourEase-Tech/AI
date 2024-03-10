@@ -1,8 +1,7 @@
 from sortedcontainers import SortedList
 from datetime import datetime
 from connection import connect_to_database
-import heapq
-import re
+
 
 class ContentBased:
     def __init__(self):
@@ -50,19 +49,17 @@ class ContentBased:
         name_i = self.tours[tour_i]['name']
         name_j = self.tours[tour_j]['name']
 
-        tokens_i = re.findall(r'\w+', name_i.lower())  
-        tokens_j = re.findall(r'\w+', name_j.lower())
-        common_tokens = set(tokens_i) & set(tokens_j)
-        similarity = len(common_tokens) / len(name_i)
+        if(name_i == name_j):
+            return 1
 
-        return similarity
+        return 0
         
     def get_sim_departureLocation(self,tour_id_i, tour_id_j):
         departureLocation_i = set(self.tours[tour_id_i]['departureLocation'])
         departureLocation_j = set(self.tours[tour_id_j]['departureLocation'])
-        similarity = len(departureLocation_i.intersection(departureLocation_j))/len(departureLocation_i.union(departureLocation_j))
-
-        return similarity 
+        if(departureLocation_i == departureLocation_j):
+            return 1
+        return 0 
 
     def get_sim_price(self, tour_i, tour_j):
         price_i = self.tours[tour_i]['price']
@@ -71,13 +68,9 @@ class ContentBased:
             return 0
         max_price = max(price_i, price_j)
 
-        normalized_price_i = price_i / max_price
-        normalized_price_j = price_j / max_price
+        min_price = min(price_i, price_j)
 
-        normalized_price_i = (max_price- price_i ) / (max_price )
-        normalized_price_j = (max_price - price_j) / (max_price )
-
-        similarity = abs(normalized_price_i - normalized_price_j)
+        similarity = abs(min_price / max_price)
 
         return similarity 
 
@@ -86,11 +79,11 @@ class ContentBased:
         period_j = float(self.tours[tour_j]['period'])
         diff = abs(period_i - period_j)
 
-        if diff < 12:
+        if diff <= 12:
             return 1
-        elif diff < 24:
+        elif diff <= 24:
             return 0.8
-        elif diff < 48:
+        elif diff <= 48:
             return 0.6
         return 0
 
