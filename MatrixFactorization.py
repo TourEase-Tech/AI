@@ -14,7 +14,6 @@ class MatrixFactorizationRecommenderSystem:
         self.user_to_tour = {}
         self.tour_to_user = {}
         self.tour_user_liked = {}
-        self.recommend_history = {}
         self.k = 1
         
         for row in self.tours.values():
@@ -103,7 +102,10 @@ class MatrixFactorizationRecommenderSystem:
 
                 saved_W = np.copy(self.W[user_id])
                 saved_U = np.copy(self.U[tour_id])
-
+                # cap nhat gia tri du doan
+                # weight là một siêu tham số của thuật toán và bạn có thể thử nghiệm với các giá trị khác nhau
+                # weight là một hệ số điều chỉnh (regularization parameter) được sử dụng trong quá trình cập nhật các ma trận W và U trong thuật toán Matrix Factorization. 
+                # Thường được sử dụng để kiểm soát overfitting trong mô hình. 
                 self.W[user_id] += learning_rate * (2 * error * saved_U - weight * saved_W)
                 self.U[tour_id] += learning_rate * (2 * error * saved_W - weight * saved_U)
 
@@ -111,14 +113,13 @@ class MatrixFactorizationRecommenderSystem:
             
             loss = loss / len(self.tour_user_liked)
             rmse = math.sqrt(loss)
-            print(f'Epoch: {i + 1}/{epoch}')
-            print('Loss: ' , loss, 'RMSE: ', rmse)
+            # print(f'Epoch: {i + 1}/{epoch}')
+            # print('Loss: ' , loss, 'RMSE: ', rmse)
         
 
         self.saved_W = self.W
         self.saved_U = self.U
 
-        self.recommend_history = {}
     def sigmoid(self,x):
         return 1 / (1 + np.exp(-x))
     
@@ -128,19 +129,14 @@ class MatrixFactorizationRecommenderSystem:
     def recommend_matrix_factorization(self, user_id, n = 10):
         recommend_list = SortedList()
         for tour_id in self.tour_to_user.keys():
+            # Voi moi tour neu khong co user like thi se du doan rating liked = self.get_rating(user_id, tour_id)
             if(tour_id, user_id) not in self.tour_user_liked:
                 liked = self.get_rating(user_id, tour_id)
                 sim = []
                 for tour_id_user_liked in self.user_to_tour[user_id]:
                     sim.append(self.contentBasedModel.get_tour_similarities(tour_id_user_liked, tour_id))
-                
-                adjust = 0
-
-                if(user_id, tour_id) in self.recommend_history:
-                    # Hao tru 0.3 moi lan
-                    adjust = self.recommend_history[(user_id,tour_id)] * 0.03
-
-                recommend_list.add((np.mean(sim) * liked - adjust, tour_id))
+            
+                recommend_list.add((np.mean(sim) * liked , tour_id))
                 if len(recommend_list) > n:
                     del recommend_list[0]
         result = []
