@@ -96,23 +96,23 @@ class MatrixFactorizationRecommenderSystem:
             for tour_id, user_id in self.tour_user_liked:
                 liked = self.tour_user_liked[(tour_id,user_id)]
 
-                predict_liked = np.dot(self.W[user_id], self.U[tour_id])
-
+                predict_liked = self.sigmoid(np.dot(self.W[user_id], self.U[tour_id]))
                 error = liked - predict_liked
 
                 saved_W = np.copy(self.W[user_id])
                 saved_U = np.copy(self.U[tour_id])
-                # cap nhat gia tri du doan
                 # weight là một siêu tham số của thuật toán và bạn có thể thử nghiệm với các giá trị khác nhau
-                # weight là một hệ số điều chỉnh (regularization parameter) được sử dụng trong quá trình cập nhật các ma trận W và U trong thuật toán Matrix Factorization. 
-                # Thường được sử dụng để kiểm soát overfitting trong mô hình. 
+
+
+                # Cap nhat ma tran nguoi dung va ma tran muc tieu
+                # https://everdark.github.io/k9/notebooks/ml/matrix_factorization/matrix_factorization.nb.html
                 self.W[user_id] += learning_rate * (2 * error * saved_U - weight * saved_W)
                 self.U[tour_id] += learning_rate * (2 * error * saved_W - weight * saved_U)
 
                 loss += error ** 2
-            
+            # https://d2l.ai/chapter_recommender-systems/mf.html
             loss = loss / len(self.tour_user_liked)
-            
+        
             rmse = math.sqrt(loss)
             # print(f'Epoch: {i + 1}/{epoch}')
             # print('Loss: ' , loss, 'RMSD: ', rmse)
@@ -125,6 +125,7 @@ class MatrixFactorizationRecommenderSystem:
         return 1 / (1 + np.exp(-x))
     
     def get_rating(self, user_id, tour_id):
+        # tich vo huong U x W
         return self.sigmoid(np.dot(self.saved_W[user_id], self.saved_U[tour_id]))
     
     def recommend_matrix_factorization(self, user_id, n = 10):
@@ -153,3 +154,6 @@ class MatrixFactorizationRecommenderSystem:
                 'score': round(score,2)
             })
         return result
+
+recommend = MatrixFactorizationRecommenderSystem()
+recommend.fit(100, 0.01, 0.2)
