@@ -112,11 +112,12 @@ class MatrixFactorizationRecommenderSystem:
                 loss += error ** 2
             
             loss = loss / len(self.tour_user_liked)
+            
             rmse = math.sqrt(loss)
             # print(f'Epoch: {i + 1}/{epoch}')
-            # print('Loss: ' , loss, 'RMSE: ', rmse)
+            # print('Loss: ' , loss, 'RMSD: ', rmse)
         
-
+        # luu gia tri du doan moi vao saved
         self.saved_W = self.W
         self.saved_U = self.U
 
@@ -141,10 +142,6 @@ class MatrixFactorizationRecommenderSystem:
                     del recommend_list[0]
         result = []
         for score, tour_id in list(recommend_list):
-            if(user_id, tour_id) in self.recommend_history:
-                self.recommend_history[(user_id,tour_id)] += 1
-            else:
-                self.recommend_history[(user_id,tour_id)] = 0
             result.append({
                 'id': tour_id,
                 'name': self.tours[tour_id]['name'],
