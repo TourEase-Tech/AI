@@ -154,6 +154,3 @@ class MatrixFactorizationRecommenderSystem:
                 'score': round(score,2)
             })
         return result
-
-recommend = MatrixFactorizationRecommenderSystem()
-recommend.fit(100, 0.01, 0.2)
